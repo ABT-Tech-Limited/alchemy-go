@@ -14,6 +14,34 @@ func (c *Client) GetAssetTransfers(ctx context.Context, params *AssetTransfersPa
 	return &result, nil
 }
 
+// GetAssetTransfersEnhanced retrieves all asset transfers by automatically handling pagination.
+// It continues fetching pages until no more results are available (pageKey is empty).
+func (c *Client) GetAssetTransfersEnhanced(ctx context.Context, params *AssetTransfersParams) (*AssetTransfersResponse, error) {
+	// Make a copy of params to avoid modifying the original
+	paramsCopy := *params
+
+	var allTransfers []AssetTransfer
+
+	for {
+		result, err := c.GetAssetTransfers(ctx, &paramsCopy)
+		if err != nil {
+			return nil, err
+		}
+
+		allTransfers = append(allTransfers, result.Transfers...)
+
+		if !result.HasMore() {
+			break
+		}
+
+		paramsCopy.PageKey = result.PageKey
+	}
+
+	return &AssetTransfersResponse{
+		Transfers: allTransfers,
+	}, nil
+}
+
 // GetAssetTransfersIterator returns an iterator for paginating through asset transfers.
 func (c *Client) GetAssetTransfersIterator(ctx context.Context, params *AssetTransfersParams) *AssetTransfersIterator {
 	// Make a copy of params to avoid modifying the original

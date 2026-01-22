@@ -102,7 +102,6 @@ func (c *HTTPClient) Do(ctx context.Context, req *http.Request) (*http.Response,
 
 		return nil
 	})
-
 	if err != nil {
 		// Check if it's a stopRetry wrapper
 		if sr, ok := err.(*stopRetry); ok {

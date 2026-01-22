@@ -80,6 +80,36 @@ func main() {
 		fmt.Printf("More results available (pageKey: %s)\n", resp.PageKey)
 	}
 
+	// Example: Using enhanced method to get all transfers
+	fmt.Println("\n=== Using GetAssetTransfersEnhanced ===")
+
+	enhancedParams := &data.AssetTransfersParams{
+		ToAddress:        &address,
+		Category:         []data.AssetTransferCategory{data.CategoryERC20},
+		WithMetadata:     true,
+		ExcludeZeroValue: true,
+		Order:            data.SortDesc,
+		MaxCount:         "0x5",       // 5 per page, will auto-paginate
+		FromBlock:        "0x1717799", // Recent block to limit results
+	}
+
+	enhancedResp, err := client.Data.GetAssetTransfersEnhanced(ctx, enhancedParams)
+	if err != nil {
+		log.Printf("Failed to get enhanced asset transfers: %v", err)
+	} else {
+		fmt.Printf("Total transfers fetched (all pages): %d\n", len(enhancedResp.Transfers))
+		fmt.Printf("Has more pages: %v\n", enhancedResp.HasMore())
+
+		// Show first 5 transfers
+		limit := min(5, len(enhancedResp.Transfers))
+		for i := range limit {
+			t := enhancedResp.Transfers[i]
+			if t.Asset != nil && t.Value != nil {
+				fmt.Printf("  %s: %.4f %s\n", t.Hash[:16], *t.Value, *t.Asset)
+			}
+		}
+	}
+
 	// Example: Using iterator for pagination
 	fmt.Println("\n=== Using Iterator ===")
 
